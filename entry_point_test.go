@@ -14,10 +14,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// +build interdomain
+
 package test
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+
+	"github.com/networkservicemesh/integration-tests/suites/interdomain/basic"
 )
 
-func TestEmpty(t *testing.T) {}
+func TestInterdomainBasicSuite(t *testing.T) {
+	suite.Run(t, new(basic.Suite))
+}
