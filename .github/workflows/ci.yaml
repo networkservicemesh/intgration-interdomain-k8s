@@ -77,7 +77,7 @@ jobs:
       - name: Get cloudtest
         run: go get github.com/networkservicemesh/cloudtest@master
       - name: Get kind
-        run: go get sigs.k8s.io/kind@v0.11.0
+        run: go get sigs.k8s.io/kind@v0.11.1
       - name: Check out code
         uses: actions/checkout@v2
         with:
@@ -86,9 +86,16 @@ jobs:
         run: |
           cloudtest
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
-      - name: Upload artifacts
-        if: ${{ success() || failure() || cancelled() }}
-        uses: actions/upload-artifact@v2
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@v2.1.0
+        if: ${{ always() }}
         with:
-          name: Containers logs
-          path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/logs
+          report_paths: "**/cloud_test/results/junit.xml"
+          suite_regex: "Test*"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: logs-${{ github.run_number }}
+          path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/.tests/cloud_test/

@@ -23,9 +23,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/networkservicemesh/integration-tests/suites/interdomain/basic"
+	"github.com/networkservicemesh/integration-tests/suites/interdomain"
 )
 
 func TestInterdomainBasicSuite(t *testing.T) {
-	suite.Run(t, new(basic.Suite))
+	suite.Run(t, new(interdomain.Suite))
 }
