@@ -64,6 +64,8 @@ jobs:
           git diff --name-only --exit-code go.sum || ( echo "Run go tidy" && false )
   cloudtest:
     runs-on: ubuntu-latest
+    env:
+      KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
     steps:
       - uses: actions/setup-go@v1
         with:
