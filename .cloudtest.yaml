@@ -33,6 +33,7 @@ providers:
     timeout: 3600
     env:
       - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
+      - KUBERNETES_VERSION=${{ secrets.NSM_KUBERNETES_VERSION }}
     scripts:
       start: |
         kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:${KUBERNETES_VERSION}
@@ -49,6 +50,7 @@ providers:
     timeout: 3600
     env:
       - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
+      - KUBERNETES_VERSION=${{ secrets.NSM_KUBERNETES_VERSION }}
     scripts:
       start: |
         kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:${KUBERNETES_VERSION}
