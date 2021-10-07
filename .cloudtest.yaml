@@ -16,9 +16,10 @@ providers:
     timeout: 3600
     env:
       - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
+      - KUBERNETES_VERSION=${{ secrets.NSM_KUBERNETES_VERSION }}
     scripts:
       start: |
-        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:v1.21.1
+        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:${KUBERNETES_VERSION}
       config: |
         sh -c "kind get kubeconfig --name ${KIND_CLUSTER_NAME} > \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\" && echo \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\""
       stop: |
@@ -34,7 +35,7 @@ providers:
       - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
     scripts:
       start: |
-        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:v1.21.1
+        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:${KUBERNETES_VERSION}
       config: |
         sh -c "kind get kubeconfig --name ${KIND_CLUSTER_NAME} > \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\" && echo \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\""
       stop: |
@@ -50,7 +51,7 @@ providers:
       - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
     scripts:
       start: |
-        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:v1.21.1
+        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:${KUBERNETES_VERSION}
       config: |
         sh -c "kind get kubeconfig --name ${KIND_CLUSTER_NAME} > \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\" && echo \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\""
       stop: |
