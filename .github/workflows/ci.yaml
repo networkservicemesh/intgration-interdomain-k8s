@@ -67,6 +67,17 @@ jobs:
     env:
       KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
     steps:
+      - name: Install azure-cli
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az version
+      - name: Set up azure permissions
+        run: |
+          sudo chmod -R 777 ~/.azure
+      - name: Set up /bin permissions
+        run: |
+          sudo chmod -R 777 /bin
       - uses: actions/setup-go@v1
         with:
           go-version: 1.16
@@ -87,6 +98,10 @@ jobs:
       - name: Run interdomain testing
         run: |
           cloudtest
+        env:
+          AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
+          AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
       - name: Publish test report
         uses: mikepenz/action-junit-report@v2.1.0

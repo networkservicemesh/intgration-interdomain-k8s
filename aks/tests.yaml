@@ -1,0 +1,15 @@
+---
+executions:
+  - name: "Sample go tests"
+    root: .
+    source:
+      tags:
+        - interdomain
+    timeout: 3600
+    cluster-count: 3
+    cluster-selector:
+      - azure
+    cluster-env:
+      - KUBECONFIG1
+      - KUBECONFIG2
+      - KUBECONFIG3
