@@ -19,6 +19,7 @@
 package test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -27,5 +28,6 @@ import (
 )
 
 func TestInterdomainBasicSuite(t *testing.T) {
+	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG3"))
 	suite.Run(t, new(interdomain.Suite))
 }
