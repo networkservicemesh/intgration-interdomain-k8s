@@ -60,9 +60,9 @@ reporting:
 executions:
   - name: "Sample go tests"
     env:
-      - CLUSTER_CIDR1=172.18.1.128/25
-      - CLUSTER_CIDR2=172.18.2.128/25
-      - CLUSTER_CIDR3=172.18.3.128/25
+      - CLUSTER1_CIDR=172.18.1.128/25
+      - CLUSTER2_CIDR=172.18.2.128/25
+      - CLUSTER3_CIDR=172.18.3.128/25
     root: .
     source:
       tags:
