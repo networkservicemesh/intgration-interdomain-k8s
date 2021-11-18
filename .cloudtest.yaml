@@ -7,7 +7,7 @@ statistics:
   enabled: true
   interval: 60
 import:
-  - aks/.*
+  - gke/.*
   - aks/.*
   - aws/.*
   - packet/.*

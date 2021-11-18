@@ -3,7 +3,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Amazon EKS - Node Group
 
 Parameters:
-
   KeyName:
     Description: The EC2 Key Pair to allow SSH access to the instances
     Type: AWS::EC2::KeyPair::KeyName
@@ -146,7 +145,6 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
 
 Metadata:
-
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -173,7 +171,6 @@ Metadata:
           - Subnets
 
 Resources:
-
   NodeInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -310,18 +307,16 @@ Resources:
             VolumeType: gp2
             DeleteOnTermination: true
       UserData:
-        Fn::Base64:
-          !Sub |
-            #!/bin/bash
-            set -o xtrace
-            /etc/eks/bootstrap.sh ${ClusterName} ${BootstrapArguments}
-            /opt/aws/bin/cfn-signal --exit-code $? \
-                     --stack  ${AWS::StackName} \
-                     --resource NodeGroup  \
-                     --region ${AWS::Region}
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -o xtrace
+          /etc/eks/bootstrap.sh ${ClusterName} ${BootstrapArguments}
+          /opt/aws/bin/cfn-signal --exit-code $? \
+                   --stack  ${AWS::StackName} \
+                   --resource NodeGroup  \
+                   --region ${AWS::Region}
 
 Outputs:
-
   NodeInstanceRole:
     Description: The node instance role
     Value: !GetAtt NodeInstanceRole.Arn

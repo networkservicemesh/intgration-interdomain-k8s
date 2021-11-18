@@ -1,10 +1,9 @@
 # yamllint disable
 ---
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Amazon EKS Sample VPC'
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Amazon EKS Sample VPC"
 
 Parameters:
-
   VpcBlock:
     Type: String
     Default: 192.168.0.0/16
@@ -28,8 +27,7 @@ Parameters:
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      -
-        Label:
+      - Label:
           default: "Worker Network Configuration"
         Parameters:
           - VpcBlock
@@ -41,17 +39,17 @@ Conditions:
   Has2Azs:
     Fn::Or:
       - Fn::Equals:
-        - {Ref: 'AWS::Region'}
-        - ap-south-1
+          - { Ref: "AWS::Region" }
+          - ap-south-1
       - Fn::Equals:
-        - {Ref: 'AWS::Region'}
-        - ap-northeast-2
+          - { Ref: "AWS::Region" }
+          - ap-northeast-2
       - Fn::Equals:
-        - {Ref: 'AWS::Region'}
-        - ca-central-1
+          - { Ref: "AWS::Region" }
+          - ca-central-1
       - Fn::Equals:
-        - {Ref: 'AWS::Region'}
-        - cn-north-1
+          - { Ref: "AWS::Region" }
+          - cn-north-1
 
   HasMoreThan2Azs:
     Fn::Not:
@@ -61,18 +59,18 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock:  !Ref VpcBlock
+      CidrBlock: !Ref VpcBlock
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-VPC'
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-VPC"
 
   Ipv6VPCCidrBlock:
     Type: AWS::EC2::VPCCidrBlock
     Properties:
-        AmazonProvidedIpv6CidrBlock: true
-        VpcId: !Ref VPC
+      AmazonProvidedIpv6CidrBlock: true
+      VpcId: !Ref VPC
 
   InternetGateway:
     Type: "AWS::EC2::InternetGateway"
@@ -88,10 +86,10 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       Tags:
-      - Key: Name
-        Value: Public Subnets
-      - Key: Network
-        Value: Public
+        - Key: Name
+          Value: Public Subnets
+        - Key: Network
+          Value: Public
 
   Route:
     DependsOn: VPCGatewayAttachment
@@ -108,18 +106,19 @@ Resources:
     Properties:
       AvailabilityZone:
         Fn::Select:
-        - '0'
-        - Fn::GetAZs:
-            Ref: AWS::Region
+          - "0"
+          - Fn::GetAZs:
+              Ref: AWS::Region
       AssignIpv6AddressOnCreation: true
       CidrBlock:
         Ref: Subnet01Block
-      Ipv6CidrBlock: !Select [0, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64]]
+      Ipv6CidrBlock:
+        !Select [0, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64]]
       VpcId:
         Ref: VPC
       Tags:
-      - Key: Name
-        Value: !Sub "${AWS::StackName}-Subnet01"
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Subnet01"
     DependsOn: Ipv6VPCCidrBlock
 
   Subnet02:
@@ -129,17 +128,18 @@ Resources:
     Properties:
       AvailabilityZone:
         Fn::Select:
-        - '1'
-        - Fn::GetAZs:
-            Ref: AWS::Region
+          - "1"
+          - Fn::GetAZs:
+              Ref: AWS::Region
       CidrBlock:
         Ref: Subnet02Block
-      Ipv6CidrBlock: !Select [1, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64]]
+      Ipv6CidrBlock:
+        !Select [1, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64]]
       VpcId:
         Ref: VPC
       Tags:
-      - Key: Name
-        Value: !Sub "${AWS::StackName}-Subnet02"
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Subnet02"
     DependsOn: Ipv6VPCCidrBlock
 
   Subnet03:
@@ -150,17 +150,18 @@ Resources:
     Properties:
       AvailabilityZone:
         Fn::Select:
-        - '2'
-        - Fn::GetAZs:
-            Ref: AWS::Region
+          - "2"
+          - Fn::GetAZs:
+              Ref: AWS::Region
       CidrBlock:
         Ref: Subnet03Block
-      Ipv6CidrBlock: !Select [2, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64]]
+      Ipv6CidrBlock:
+        !Select [2, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64]]
       VpcId:
         Ref: VPC
       Tags:
-      - Key: Name
-        Value: !Sub "${AWS::StackName}-Subnet03"
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Subnet03"
     DependsOn: Ipv6VPCCidrBlock
 
   Subnet01RouteTableAssociation:
@@ -189,18 +190,17 @@ Resources:
       VpcId: !Ref VPC
 
 Outputs:
-
   SubnetIds:
     Description: All subnets in the VPC
     Value:
       Fn::If:
-      - HasMoreThan2Azs
-      - !Join [ ",", [ !Ref Subnet01, !Ref Subnet02, !Ref Subnet03 ] ]
-      - !Join [ ",", [ !Ref Subnet01, !Ref Subnet02 ] ]
+        - HasMoreThan2Azs
+        - !Join [",", [!Ref Subnet01, !Ref Subnet02, !Ref Subnet03]]
+        - !Join [",", [!Ref Subnet01, !Ref Subnet02]]
 
   SecurityGroups:
     Description: Security group for the cluster control plane communication with worker nodes
-    Value: !Join [ ",", [ !Ref ControlPlaneSecurityGroup ] ]
+    Value: !Join [",", [!Ref ControlPlaneSecurityGroup]]
 
   VpcId:
     Description: The VPC Id
