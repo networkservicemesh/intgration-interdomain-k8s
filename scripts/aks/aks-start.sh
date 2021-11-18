@@ -46,7 +46,7 @@ else
         az aks create \
             --resource-group "$AZURE_RESOURCE_GROUP" \
             --name "$AZURE_CLUSTER_NAME" \
-            --node-count 1 \
+            --node-count 2 \
             --node-vm-size Standard_B2s \
             --generate-ssh-keys \
             --debug \
@@ -65,7 +65,7 @@ else
                     \"agentPoolProfiles\":
                     [{
                         \"name\": \"nodepool1\",
-                        \"count\": 1,
+                        \"count\": 2,
                         \"orchestratorVersion\": \"1.21.2\",
                         \"vmSize\": \"Standard_B2s\",
                         \"osType\": \"Linux\",
@@ -95,7 +95,8 @@ echo "done" || exit 1
 echo "Creating Inbound traffic rule"
 NODE_RESOURCE_GROUP=$(az aks show -g "$AZURE_RESOURCE_GROUP" -n "$AZURE_CLUSTER_NAME" --query nodeResourceGroup -o tsv)
 NSG_NAME=$(nsg_polling "$NODE_RESOURCE_GROUP")
-az network nsg rule create --name "${NSG_NAME}-rule" \
+echo "NSG_NAME=$NSG_NAME"
+az network nsg rule create --name "nsg-rule" \
     --nsg-name "$NSG_NAME" \
     --priority 100 \
     --resource-group "$NODE_RESOURCE_GROUP" \
