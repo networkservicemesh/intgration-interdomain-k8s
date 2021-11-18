@@ -14,18 +14,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build interdomain
-
 package test
 
 import (
+	"flag"
+	"os"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/networkservicemesh/integration-tests/suites/interdomain"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 func TestInterdomainBasicSuite(t *testing.T) {
+	require.NoError(t, flag.Set("gotestmd.t", "10m"))
+	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
 	suite.Run(t, new(interdomain.Suite))
 }

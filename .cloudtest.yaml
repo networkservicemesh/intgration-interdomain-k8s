@@ -6,74 +6,11 @@ shuffle-enabled: true
 statistics:
   enabled: true
   interval: 60
-providers:
-  - name: "kind-1"
-    kind: "shell"
-    instances: 1
-    node-count: 1
-    retry: 1
-    enabled: true
-    timeout: 3600
-    env:
-      - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
-    scripts:
-      start: |
-        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:v${KUBERNETES_VERSION}
-      config: |
-        sh -c "kind get kubeconfig --name ${KIND_CLUSTER_NAME} > \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\" && echo \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\""
-      stop: |
-        kind delete cluster --name ${KIND_CLUSTER_NAME}
-  - name: "kind-2"
-    kind: "shell"
-    instances: 1
-    node-count: 1
-    retry: 1
-    enabled: true
-    timeout: 3600
-    env:
-      - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
-    scripts:
-      start: |
-        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:v${KUBERNETES_VERSION}
-      config: |
-        sh -c "kind get kubeconfig --name ${KIND_CLUSTER_NAME} > \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\" && echo \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\""
-      stop: |
-        kind delete cluster --name ${KIND_CLUSTER_NAME}
-  - name: "kind-3"
-    kind: "shell"
-    instances: 1
-    node-count: 1
-    retry: 1
-    enabled: true
-    timeout: 3600
-    env:
-      - KIND_CLUSTER_NAME=cloudtest-kind-$(rands10)
-    scripts:
-      start: |
-        kind create cluster --name ${KIND_CLUSTER_NAME} --config cluster-config.yaml --wait 120s --image=kindest/node:v${KUBERNETES_VERSION}
-      config: |
-        sh -c "kind get kubeconfig --name ${KIND_CLUSTER_NAME} > \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\" && echo \"${HOME}/${KIND_CLUSTER_NAME}-kubeconfig\""
-      stop: |
-        kind delete cluster --name ${KIND_CLUSTER_NAME}
+import:
+  - aks/.*
+  - aks/.*
+  - aws/.*
+  - packet/.*
+  - tests.yaml
 reporting:
-  junit-report: "./.results/junit.xml"
-executions:
-  - name: "Sample go tests"
-    env:
-      - CLUSTER1_CIDR=172.18.1.128/25
-      - CLUSTER2_CIDR=172.18.2.128/25
-      - CLUSTER3_CIDR=172.18.3.128/25
-    root: .
-    source:
-      tags:
-        - interdomain
-    timeout: 3600
-    cluster-count: 3
-    cluster-selector:
-      - kind-1
-      - kind-2
-      - kind-3
-    cluster-env:
-      - KUBECONFIG1
-      - KUBECONFIG2
-      - KUBECONFIG3
+  junit-report: "results/junit.xml"

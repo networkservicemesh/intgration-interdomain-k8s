@@ -1,0 +1,47 @@
+---
+version: 1.0
+providers:
+  - name: "packet"
+    kind: "packet"
+    instances: 1
+    retry: 5
+    node-count: 2
+    enabled: true
+    timeout: 2400 # 40 minutes to start cluster
+    env:
+      - CLUSTER_RULES_PREFIX=null # To not add any specific code
+      - KUBECONFIG=$(tempdir)/config
+      - CLUSTER_NAME=$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}-$(rands10)
+    env-check:
+      - PACKET_AUTH_TOKEN
+      - PACKET_PROJECT_ID
+      - GITHUB_RUN_NUMBER
+      - KUBERNETES_VERSION
+    packet:
+      ssh-key: sshkey.pub # A key name relative to $(tempdir) or absolute
+      hardware-devices:
+        - name: "Master"
+          host-name: "SR-IOV-Master-${CLUSTER_NAME}"
+          os: "ubuntu_20_04"
+          billing-cycle: "hourly"
+          port-vlans:
+            eth3: 1044
+        - name: "Worker"
+          host-name: "SR-IOV-Worker-${CLUSTER_NAME}"
+          os: "ubuntu_20_04"
+          billing-cycle: "hourly"
+          port-vlans:
+            eth3: 1044
+      hardware-reservations:
+        - 2cf78481-53b0-46c8-a084-6e9815acdb0b
+        - 2361d3c2-f694-4fa7-a683-a9f69e2abe7c
+        - 70b51e39-2e65-4a64-8191-dd28386c0b80
+        - 4f27da36-a911-45a5-ab81-0e789348e3fe
+        - 7741d4a8-8555-492b-8d73-63c2f0715d16
+        - d173dbde-8510-454e-b0c2-c120c397cdf5
+    scripts:
+      install: "echo all deps installed"
+      setup: |
+        ssh-keygen -t rsa -f $(tempdir)/sshkey -q -N ""
+        /bin/bash -c "eval `ssh-agent -s`; ssh-add $(tempdir)/sshkey"
+      start: scripts/packet/create-kubernetes-cluster.sh $(device.Master.pub.ip.4) $(device.Worker.pub.ip.4) "$(tempdir)/sshkey"
