@@ -3,6 +3,7 @@ executions:
   - name: "Interdomain tests [packet] [aks] [aws]"
     env:
       - ARTIFACTS_ARCHIVE=true
+      - CLUSTER1_CIDR1=172.18.1.128/25
     root: ./
     timeout: 3600
     cluster-count: 3

@@ -21,9 +21,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/networkservicemesh/integration-tests/suites/interdomain"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/networkservicemesh/integration-tests/suites/interdomain"
 )
 
 func TestInterdomainBasicSuite(t *testing.T) {

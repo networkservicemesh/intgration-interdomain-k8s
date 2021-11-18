@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd scripts/aws 
+pushd scripts/aws || exit 0
 AWS_REGION=us-east-2 go run ./... Create
 kubectl describe nodes 
 kubectl get pods --all-namespaces -o wide
