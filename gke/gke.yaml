@@ -1,0 +1,26 @@
+---
+version: 1.0
+providers:
+  - name: "gke"
+    kind: "shell"
+    instances: 1
+    retry: 3
+    node-count: 1
+    enabled: true
+    timeout: 3600
+    env:
+      - GKE_PROJECT_ID=${GCLOUD_PROJECT_ID}
+      - CLUSTER_RULES_PREFIX=gke
+      - GKE_CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}
+      - KUBECONFIG=$(tempdir)/config
+      - GKE_CLUSTER_ZONE=us-central1-a
+      - GKE_CLUSTER_TYPE=n1-standard-2
+      - GKE_CLUSTER_NUM_NODES=2
+    env-check:
+      - GCLOUD_SERVICE_KEY
+      - GCLOUD_PROJECT_ID
+      - GITHUB_RUN_NUMBER
+    scripts:
+      start: scripts/gke/gke-start.sh
+      stop: scripts/gke/gke-destroy.sh
+      cleanup: scripts/gke/destroy-old-clusters.sh 4 "^interdomain-gke"

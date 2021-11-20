@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - 'release/**'
+      - "release/**"
 jobs:
   yamllint:
     name: yamllint
@@ -67,6 +67,37 @@ jobs:
     env:
       KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
     steps:
+      - name: Checkout files
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.repository }}
+      - name: Install azure-cli
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az version
+      - name: Set up azure permissions
+        run: |
+          sudo chmod -R 777 ~/.azure
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Install gcloud-sdk
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          project_id: ${{ secrets.GOOGLE_PROJECT_ID }}
+      - name: aws-iam-authenticator install
+        working-directory: ${{ github.repository }}
+        run: |
+          ./scripts/aws/aws-init.sh
+          echo "$HOME/bin" >> $GITHUB_PATH
+      - name: Set up /bin permissions
+        run: |
+          sudo chmod -R 777 /bin
       - uses: actions/setup-go@v1
         with:
           go-version: 1.16
@@ -87,6 +118,17 @@ jobs:
       - name: Run interdomain testing
         run: |
           cloudtest
+        env:
+          AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
+          AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+          PACKET_PROJECT_ID: ${{ secrets.PACKET_PROJECT_ID }}
+          KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
       - name: Publish test report
         uses: mikepenz/action-junit-report@v2.1.0
@@ -101,3 +143,25 @@ jobs:
         with:
           name: logs-${{ github.run_number }}
           path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/.tests/cloud_test/
+  packet-cleanup:
+    name: packet cleanup
+    runs-on: ubuntu-latest
+    needs:
+      - cloudtest
+    if: ${{ always() }}
+    steps:
+      - name: Set up /bin permissions
+        run: |
+          sudo chmod -R 777 /bin
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.16
+      - name: Clean up packet
+        run: |
+          go get github.com/networkservicemesh/cloudtest/pkg/providers/packet/packet_cleanup@master
+          packet_cleanup -k y -c y --cluster-prefix "interdomain"
+        env:
+          GO111MODULE: on
+          GOBIN: /bin
+          PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
+          PACKET_PROJECT_ID: ${{ secrets.PACKET_PROJECT_ID }}

@@ -1,0 +1,25 @@
+---
+version: 1.0
+providers:
+  - name: "aws"
+    kind: "shell"
+    instances: 1
+    retry: 1
+    node-count: 1
+    enabled: true
+    timeout: 3600
+    env:
+      - AWS_CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}
+      - KUBECONFIG=$(tempdir)/config
+      - NSM_AWS_SERVICE_SUFFIX=${AWS_CLUSTER_NAME}
+    env-check:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - GITHUB_RUN_NUMBER
+    scripts:
+      start: |
+        scripts/aws/aws-start.sh
+      stop: |
+        scripts/aws/aws-destroy.sh
+      cleanup: |
+        scripts/aws/destroy-old-clusters.sh 4 "^interdomain-aws"
