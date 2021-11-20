@@ -9,7 +9,7 @@ providers:
     enabled: true
     timeout: 3600 # 60 minutes to start cluster
     env:
-      - AWS_CLUSTER_NAME=$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}-$(rands10)
+      - AWS_CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}-$(rands10)
       - KUBECONFIG=$(tempdir)/config
       - NSM_AWS_SERVICE_SUFFIX=${AWS_CLUSTER_NAME}
     env-check:
@@ -22,4 +22,4 @@ providers:
       stop: |
         scripts/aws/aws-destroy.sh
       cleanup: |
-        scripts/aws/destroy-old-clusters.sh 4 "^aws"
+        scripts/aws/destroy-old-clusters.sh 4 "^interdomain-aws"

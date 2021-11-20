@@ -159,7 +159,7 @@ jobs:
       - name: Clean up packet
         run: |
           go get github.com/networkservicemesh/cloudtest/pkg/providers/packet/packet_cleanup@master
-          packet_cleanup -k y -c y
+          packet_cleanup -k y -c y -cluster-prefix "interdomain-Worker-packet-" -cluster-prefix "interdomain-Master-packet-"
         env:
           GO111MODULE: on
           GOBIN: /bin
