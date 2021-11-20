@@ -7,7 +7,7 @@ providers:
     retry: 3
     node-count: 1
     enabled: true
-    timeout: 900 # 15 minutes to start cluster
+    timeout: 3600
     env:
       - GKE_PROJECT_ID=${GCLOUD_PROJECT_ID}
       - CLUSTER_RULES_PREFIX=gke

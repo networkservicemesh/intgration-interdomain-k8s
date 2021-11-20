@@ -7,9 +7,9 @@ providers:
     retry: 10
     node-count: 2
     enabled: true
-    timeout: 2400 # 40 minutes to start cluster
+    timeout: 3600
     env:
-      - CLUSTER_RULES_PREFIX=null # To not add any specific code
+      - CLUSTER_RULES_PREFIX=null
       - KUBECONFIG=$(tempdir)/config
       - CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}-$(rands10)
     env-check:
@@ -18,7 +18,7 @@ providers:
       - GITHUB_RUN_NUMBER
       - KUBERNETES_VERSION
     packet:
-      ssh-key: sshkey.pub # A key name relative to $(tempdir) or absolute
+      ssh-key: sshkey.pub
       hardware-devices:
         - name: "interdomain-Master"
           host-name: "SR-IOV-Master-${CLUSTER_NAME}"
