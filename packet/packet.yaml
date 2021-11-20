@@ -11,7 +11,7 @@ providers:
     env:
       - CLUSTER_RULES_PREFIX=null
       - KUBECONFIG=$(tempdir)/config
-      - CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}-$(rands10)
+      - CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}
     env-check:
       - PACKET_AUTH_TOKEN
       - PACKET_PROJECT_ID

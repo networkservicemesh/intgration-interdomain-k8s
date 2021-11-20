@@ -9,7 +9,7 @@ providers:
     enabled: true
     timeout: 3600
     env:
-      - AZURE_CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}-$(rands10)
+      - AZURE_CLUSTER_NAME=interdomain-$(cluster-name)-$(date)-${GITHUB_RUN_NUMBER}
       - AZURE_RESOURCE_GROUP=nsm-ci
       - KUBECONFIG=$(tempdir)/config
       - AZURE_CREDENTIALS_PATH=$(tempdir)/config
