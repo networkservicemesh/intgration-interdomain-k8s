@@ -13,9 +13,9 @@ echo -n "Creating AKS cluster '$AZURE_CLUSTER_NAME'..."
 az aks create \
     --resource-group "$AZURE_RESOURCE_GROUP" \
     --name "$AZURE_CLUSTER_NAME" \
-    --node-count 2 \
+    --node-count 1 \
     --node-vm-size Standard_B2s \
-    --enableNodePublicIP \
+    --enable-node-public-ip \
     --generate-ssh-keys \
     --debug && \
     echo "az aks create done" || exit 3
