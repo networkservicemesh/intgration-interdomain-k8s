@@ -1,7 +1,7 @@
 ---
 version: 1.0
 root: "./.tests/cloud_test/"
-timeout: 7200
+timeout: 10000
 shuffle-enabled: true
 statistics:
   enabled: true

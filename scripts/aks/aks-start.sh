@@ -26,22 +26,30 @@ az aks wait  \
 echo "az aks wait done" || exit 4
 
 NODE_RESOURCE_GROUP=$(az aks show -g "$AZURE_RESOURCE_GROUP" -n "$AZURE_CLUSTER_NAME" --query nodeResourceGroup -o tsv)
-echo NODE_RESOURCE_GROUP=$NODE_RESOURCE_GROUP
+echo NODE_RESOURCE_GROUP="$NODE_RESOURCE_GROUP"
 NSG_NAME=""
-for i in {1..20}
+for i in {1..25}
 do
     NSG_NAME=$(az network nsg list -o tsv --query "[? resourceGroup == '$NODE_RESOURCE_GROUP'].name")
-    if [[ ! -z $NSG_NAME  ]]; then
+    if [[ -n $NSG_NAME  ]]; then
         break
     fi
-    NSG_NAME=$(az network nsg list -g $NODE_RESOURCE_GROUP --query "[].name" -o tsv)
-    if [[ ! -z $NSG_NAME  ]]; then
+    NSG_NAME=$(az network nsg list -g "$NODE_RESOURCE_GROUP" --query "[].name" -o tsv)
+    if [[ -n $NSG_NAME  ]]; then
         break
     fi
-    sleep 15
+    sleep 30
+    echo attempt "$i" has failed
 done
 
-echo NSG_NAME=$NSG_NAME
+if [[ -z $NSG_NAME  ]]; then
+    echo NSG_NAME is empty. Creating custom NSG...
+    NSG_NAME="nsmnsg"
+    az network nsg create -g "$NODE_RESOURCE_GROUP" -n "$NSG_NAME"
+    NSG_NAME=$(az network nsg list -g "$NODE_RESOURCE_GROUP" --query "[0].name" -o tsv)
+fi
+
+echo NSG_NAME="$NSG_NAME"
 
 if [[ -z $NSG_NAME  ]]; then
     echo "NSG is not found for resource group $NODE_RESOURCE_GROUP"
