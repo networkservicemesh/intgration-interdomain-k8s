@@ -22,4 +22,4 @@ providers:
       stop: |
         scripts/aws/aws-destroy.sh
       cleanup: |
-        scripts/aws/destroy-old-clusters.sh 4 "^interdomain-aws"
+        scripts/aws/destroy-old-clusters.sh "^interdomain-aws"
