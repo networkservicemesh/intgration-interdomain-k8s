@@ -83,22 +83,11 @@ jobs:
       - name: Set up azure permissions
         run: |
           sudo chmod -R 777 ~/.azure
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
       - name: Install gcloud-sdk
         uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
           project_id: ${{ secrets.GOOGLE_PROJECT_ID }}
-      - name: aws-iam-authenticator install
-        working-directory: ${{ github.repository }}
-        run: |
-          ./scripts/aws/aws-init.sh
-          echo "$HOME/bin" >> $GITHUB_PATH
       - name: Set up /bin permissions
         run: |
           sudo chmod -R 777 /bin
