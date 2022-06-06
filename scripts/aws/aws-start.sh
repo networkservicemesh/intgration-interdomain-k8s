@@ -2,6 +2,12 @@
 
 apt-get update && apt-get -y install curl dnsutils
 
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl
+chmod +x kubectl
+mkdir -p ~/.local/bin
+mv ./kubectl ~/.local/bin/kubectl
+
+
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp; \
     mv /tmp/eksctl /usr/local/bin; \
     eksctl version
@@ -16,10 +22,5 @@ eksctl create cluster  \
       --nodegroup-name "${AWS_CLUSTER_NAME}-workers" \
       --node-type t3.xlarge \
       --nodes 1
-
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl
-chmod +x kubectl
-mkdir -p ~/.local/bin
-mv ./kubectl ~/.local/bin/kubectl
 
 kubectl version --client
