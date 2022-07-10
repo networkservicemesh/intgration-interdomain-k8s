@@ -23,4 +23,21 @@ eksctl create cluster  \
       --node-type t3.xlarge \
       --nodes 1
 
+## Setup security group rules
+sg=$(aws ec2 describe-security-groups --filter Name=tag:aws:eks:cluster-name,Values=testing --query 'SecurityGroups[0].GroupId' --output text)
+
+### authorize wireguard
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol tcp --port 51820 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol udp --port 51820 --cidr 0.0.0.0/0
+### authorize vxlan
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol tcp --port 4789 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol udp --port 4789 --cidr 0.0.0.0/0
+### authorize nsmgr-proxy
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol tcp --port 5004 --cidr 0.0.0.0/0
+### authorize registry
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol tcp --port 5002 --cidr 0.0.0.0/0
+### authorize vl3-ipam
+aws ec2 authorize-security-group-ingress --group-id $sg --protocol tcp --port 5006 --cidr 0.0.0.0/0
+
+
 kubectl version --client
