@@ -23,10 +23,25 @@ eksctl create cluster  \
       --node-type t3.xlarge \
       --nodes 1
 
-## Setup security group rules
 sg=$(aws ec2 describe-security-groups --filter Name=tag:aws:eks:cluster-name,Values="${AWS_CLUSTER_NAME}" --query 'SecurityGroups[0].GroupId' --output text)
 
 echo "security group is $sg"
+
+## Setup security group rules
+for i in {1..25}
+do
+    if [[ -n $sg  ]]; then
+        break
+    fi
+    sleep 30
+    echo attempt "$i" has failed
+    sg=$(aws ec2 describe-security-groups --filter Name=tag:aws:eks:cluster-name,Values="${AWS_CLUSTER_NAME}" --query 'SecurityGroups[0].GroupId' --output text)
+done
+
+if [[ -z $sg  ]]; then
+    echo "Security group is not found"
+    exit 1
+fi
 
 aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol all --port all --cidr 0.0.0.0/0
 
