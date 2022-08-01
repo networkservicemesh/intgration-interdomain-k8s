@@ -21,16 +21,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/networkservicemesh/integration-tests/suites/floating_interdomain"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/networkservicemesh/integration-tests/suites/interdomain"
-
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // This is required for GKE authentication
 )
 
-func TestInterdomainBasicSuite(t *testing.T) {
+func TestFloatingInterdomainBasicSuite(t *testing.T) {
 	require.NoError(t, flag.Set("gotestmd.t", "10m"))
 	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
-	suite.Run(t, new(interdomain.Suite))
+	suite.Run(t, new(floating_interdomain.Suite))
 }
