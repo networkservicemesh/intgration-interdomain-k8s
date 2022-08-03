@@ -117,6 +117,7 @@ jobs:
           AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "us-west-2"
           PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
           PACKET_PROJECT_ID: ${{ secrets.PACKET_PROJECT_ID }}
           KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
