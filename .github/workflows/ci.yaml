@@ -91,7 +91,7 @@ jobs:
         with:
           name: logs-${{ github.run_number }}
           path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/.tests/cloud_test/
-  
+
   packet-cleanup:
     name: packet cleanup
     runs-on: ubuntu-latest
