@@ -19,26 +19,24 @@ providers:
       - KUBERNETES_VERSION
     packet:
       ssh-key: sshkey.pub
-      hardware-devices:
+      devices:
         - name: "interdomain-Master"
           host-name: "SR-IOV-Master-${CLUSTER_NAME}"
           os: "ubuntu_20_04"
           billing-cycle: "hourly"
-          port-vlans:
-            eth3: 1044
+          plan: "n3.xlarge.x86"
         - name: "interdomain-Worker"
           host-name: "SR-IOV-Worker-${CLUSTER_NAME}"
           os: "ubuntu_20_04"
           billing-cycle: "hourly"
-          port-vlans:
-            eth3: 1044
-      hardware-reservations:
-        - 2cf78481-53b0-46c8-a084-6e9815acdb0b
-        - 2361d3c2-f694-4fa7-a683-a9f69e2abe7c
-        - 70b51e39-2e65-4a64-8191-dd28386c0b80
-        - 4f27da36-a911-45a5-ab81-0e789348e3fe
-        - 7741d4a8-8555-492b-8d73-63c2f0715d16
-        - d173dbde-8510-454e-b0c2-c120c397cdf5
+          plan: "n3.xlarge.x86"
+      facilities:
+        - baremetal
+        - backend_transfer
+        - layer_2
+        - global_ipv4
+        - ibx
+      preferred-facility: da11
     scripts:
       install: "echo all deps installed"
       setup: |
