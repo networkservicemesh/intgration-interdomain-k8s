@@ -1,5 +1,7 @@
 // Copyright (c) 2021 Doc.ai and/or its affiliates.
 //
+// Copyright (c) 2022 Cisco and/or its affiliates.
+//
 // SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,10 +23,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/networkservicemesh/integration-tests/suites/floating_interdomain"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // This is required for GKE authentication
+
+	"github.com/networkservicemesh/integration-tests/suites/floating_interdomain"
 )
 
 func TestFloatingInterdomainBasicSuite(t *testing.T) {
