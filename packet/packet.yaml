@@ -21,12 +21,12 @@ providers:
       ssh-key: sshkey.pub
       devices:
         - name: "interdomain-Master"
-          host-name: "SR-IOV-Master-${CLUSTER_NAME}"
+          host-name: "interdomain-Master-${CLUSTER_NAME}"
           os: "ubuntu_20_04"
           billing-cycle: "hourly"
           plan: "n3.xlarge.x86"
         - name: "interdomain-Worker"
-          host-name: "SR-IOV-Worker-${CLUSTER_NAME}"
+          host-name: "interdomain-Worker-${CLUSTER_NAME}"
           os: "ubuntu_20_04"
           billing-cycle: "hourly"
           plan: "n3.xlarge.x86"
