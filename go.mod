@@ -1,9 +1,9 @@
-module github.com/networkservicemesh/integration-k8s-kind
+module github.com/networkservicemesh/integration-interdomain-k8s
 
 go 1.18
 
 require (
-	github.com/networkservicemesh/integration-tests v0.0.0-20220801174218-305c157aa4bd
+	github.com/networkservicemesh/integration-tests v0.0.0-20221219214735-370246c106f2
 	github.com/stretchr/testify v1.7.0
 	k8s.io/client-go v0.20.5
 )
