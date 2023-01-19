@@ -16,6 +16,7 @@ providers:
       - GKE_CLUSTER_ZONE=us-central1-a
       - GKE_CLUSTER_TYPE=n1-standard-2
       - GKE_CLUSTER_NUM_NODES=2
+      - USE_GKE_GCLOUD_AUTH_PLUGIN=true
     env-check:
       - GCLOUD_SERVICE_KEY
       - GCLOUD_PROJECT_ID
