@@ -63,9 +63,90 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: ${{ github.workspace }}/src/github.com/${{ github.repository }}
-      - name: Run interdomain testing
+      - name: Setup GKE cluster
+        working-directory: ${{ github.repository }}
         run: |
-          cloudtest
+            gcloud components install gke-gcloud-auth-plugin
+            gcloud components update
+            gcloud container clusters create "${GKE_CLUSTER_NAME}" --project="${GKE_PROJECT_ID}" --machine-type="${GKE_CLUSTER_TYPE}" --num-nodes="${GKE_CLUSTER_NUM_NODES}" --zone="${GKE_CLUSTER_ZONE}" -q
+            echo "Writing config to ${KUBECONFIG}"
+            gcloud container clusters get-credentials "${GKE_CLUSTER_NAME}" --project="${GKE_PROJECT_ID}" --zone="${GKE_CLUSTER_ZONE}"
+            git clone https://github.com/coredns/deployment.git
+            ./deployment/kubernetes/deploy.sh | kubectl apply -f -
+            kubectl scale --replicas=0 deployment/kube-dns-autoscaler --namespace=kube-system
+            kubectl scale --replicas=0 deployment/kube-dns --namespace=kube-system
+            rm -rf deployment
+        env:
+          GKE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+          GKE_CLUSTER_NAME: interdomain-${{ github.run_id }}-${{ github.run_number }}
+          GKE_CLUSTER_ZONE: us-central1-a
+          GKE_CLUSTER_TYPE: n1-standard-2
+          GKE_CLUSTER_NUM_NODES: 1
+          KUBECONFIG: config1
+          USE_GKE_GCLOUD_AUTH_PLUGIN: true
+      - name: Setup AKS cluster
+        working-directory: ${{ github.repository }}
+        run: |
+          az login --service-principal --username ${AZURE_SERVICE_PRINCIPAL} --password ${AZURE_SERVICE_PRINCIPAL_SECRET} --tenant ${AZURE_TENANT}
+          az aks create \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --name "$AZURE_CLUSTER_NAME" \
+              --node-count 1 \
+              --node-vm-size Standard_B2s \
+              --generate-ssh-keys \
+              --debug
+          az aks wait  \
+            --name "$AZURE_CLUSTER_NAME" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --created > /dev/null
+          az aks get-credentials \
+              --name "$AZURE_CLUSTER_NAME" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --file "/tmp/config" \
+              --overwrite-existing
+        env:
+          AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
+          AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          AZURE_CLUSTER_NAME: aks-${{ github.run_id }}-${{ github.run_number }}
+          AZURE_RESOURCE_GROUP: nsm-ci
+      - name: Setup AWS
+        working-directory: ${{ github.repository }}
+        run: |
+          apt-get update && apt-get -y install curl dnsutils
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          mv /tmp/eksctl /usr/local/bin
+          eksctl version
+          curl -o aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator
+          chmod 755 aws-iam-authenticator
+          mv ./aws-iam-authenticator /usr/local/bin
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl
+          chmod +x kubectl
+          mkdir -p ~/.local/bin
+          mv ./kubectl ~/.local/bin/kubectl
+          kubectl version --client
+          sg=$(aws ec2 describe-security-groups --filter Name=tag:aws:eks:cluster-name,Values="${AWS_CLUSTER_NAME}" --query 'SecurityGroups[0].GroupId' --output text)
+
+          echo "security group is $sg"
+
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol all --port all --cidr 0.0.0.0/0
+
+          ### authorize wireguard
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol tcp --port 51820 --cidr 0.0.0.0/0
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol udp --port 51820 --cidr 0.0.0.0/0
+          ### authorize vxlan
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol tcp --port 4789 --cidr 0.0.0.0/0
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol udp --port 4789 --cidr 0.0.0.0/0
+          ### authorize nsmgr-proxy
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol tcp --port 5004 --cidr 0.0.0.0/0
+          ### authorize registry
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol tcp --port 5002 --cidr 0.0.0.0/0
+          ### authorize vl3-ipam
+          aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol tcp --port 5006 --cidr 0.0.0.0/0
+          kubectl version --client
+      - name: Setup AKS
+        run: |
+          go test ./... --race --timeout 2h
         env:
           AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
           AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
