@@ -26,6 +26,10 @@ jobs:
     env:
       KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
       - name: Checkout files
         uses: actions/checkout@v2
         with:
