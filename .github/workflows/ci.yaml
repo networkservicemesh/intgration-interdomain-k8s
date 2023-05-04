@@ -21,11 +21,15 @@ jobs:
   checkgomod:
     uses: networkservicemesh/.github/.github/workflows/checkgomod.yaml@main
 
-  cloudtest:
+  interdomain:
     runs-on: ubuntu-latest
     env:
       KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
       - name: Checkout files
         uses: actions/checkout@v2
         with:
@@ -55,63 +59,108 @@ jobs:
           echo GOPATH=$GITHUB_WORKSPACE >> $GITHUB_ENV
           echo GO111MODULE=on >> $GITHUB_ENV
           echo $GITHUB_WORKSPACE/bin >> $GITHUB_PATH
-      - name: Get cloudtest
-        run: go get github.com/networkservicemesh/cloudtest@master
-      - name: Get kind
-        run: go get sigs.k8s.io/kind@v0.11.1
       - name: Check out code
         uses: actions/checkout@v2
         with:
           path: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+
+      - name: Setup gke
+        run: |
+            scripts/gke/gke-start.sh
+        env:
+          GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          GCLOUD_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+          GKE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+          GKE_CLUSTER_NAME: gke-${{ github.run_id }}-${{ github.run_number }}
+          GKE_CLUSTER_ZONE: us-central1-a
+          GKE_CLUSTER_TYPE: n1-standard-2
+          GKE_CLUSTER_NUM_NODES: 1
+          KUBECONFIG: /tmp/config1
+          USE_GKE_GCLOUD_AUTH_PLUGIN: true
+        working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+
+      - name: Setup aws
+        run: |
+          scripts/aws/aws-start.sh
+        env:
+          KUBECONFIG: /tmp/config2
+          AWS_REGION: us-east-2
+          AWS_CLUSTER_NAME: aws-${{ github.run_id }}-${{ github.run_number }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+
+      - name: Setup aks
+        run: |
+          az login --service-principal --username ${AZURE_SERVICE_PRINCIPAL} --password ${AZURE_SERVICE_PRINCIPAL_SECRET} --tenant ${AZURE_TENANT}
+          scripts/aks/aks-start.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME} ${AZURE_CREDENTIALS_PATH} ${KUBECONFIG}
+        env:
+          KUBECONFIG: /tmp/config3
+          AZURE_RESOURCE_GROUP: nsm-ci
+          AZURE_CLUSTER_NAME: aks-${{ github.run_id }}-${{ github.run_number }}
+          AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
+          AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+        working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+
       - name: Run interdomain testing
         run: |
-          cloudtest
+          go test -count 1 -timeout 2h -race -v ./...
         env:
+          KUBECONFIG1: /tmp/config1
+          KUBECONFIG2: /tmp/config2
+          KUBECONFIG3: /tmp/config3
           AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
           AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
           AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-west-2"
+          USE_GKE_GCLOUD_AUTH_PLUGIN: true
           PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
           PACKET_PROJECT_ID: ${{ secrets.PACKET_PROJECT_ID }}
           KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
           GCLOUD_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
-      - name: Publish test report
-        uses: mikepenz/action-junit-report@v2.1.0
+
+      - name: Cleanup GKE
         if: ${{ always() }}
-        with:
-          report_paths: "**/cloud_test/results/junit.xml"
-          suite_regex: "Test*"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+        run: |
+          gcloud container clusters delete "${GKE_CLUSTER_NAME}" --project="${GKE_PROJECT_ID}" --zone="${GKE_CLUSTER_ZONE}" -q
+        env:
+          GKE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+          GKE_CLUSTER_NAME: gke-${{ github.run_id }}-${{ github.run_number }}
+          GKE_CLUSTER_ZONE: us-central1-a
+
+
+      - name: Cleanup AWS
+        if: ${{ always() }}
+        working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+        run: |
+          scripts/aws/aws-destroy.sh
+        env:
+          AWS_REGION: us-east-2
+          AWS_CLUSTER_NAME: aws-${{ github.run_id }}-${{ github.run_number }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Cleanup AKS
+        if: ${{ always() }}
+        working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+        run: |
+          scripts/aks/aks-destroy.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME}
+        env:
+          AZURE_CLUSTER_NAME: aks-${{ github.run_id }}-${{ github.run_number }}
+          AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
+          AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          AZURE_RESOURCE_GROUP: nsm-ci
+
       - name: Upload logs
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
           name: logs-${{ github.run_number }}
           path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/.tests/cloud_test/
-
-  packet-cleanup:
-    name: packet cleanup
-    runs-on: ubuntu-latest
-    needs:
-      - cloudtest
-    if: ${{ always() }}
-    steps:
-      - name: Set up /bin permissions
-        run: |
-          sudo chmod -R 777 /bin
-      - uses: actions/setup-go@v1
-        with:
-          go-version: 1.16
-      - name: Clean up packet
-        run: |
-          go get github.com/networkservicemesh/cloudtest/pkg/providers/packet/packet_cleanup@master
-          packet_cleanup -k y -c y --cluster-prefix "interdomain"
-        env:
-          GO111MODULE: on
-          GOBIN: /bin
-          PACKET_AUTH_TOKEN: ${{ secrets.PACKET_AUTH_TOKEN }}
-          PACKET_PROJECT_ID: ${{ secrets.PACKET_PROJECT_ID }}
