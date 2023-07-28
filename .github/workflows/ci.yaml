@@ -105,7 +105,7 @@ jobs:
 
       - name: Run interdomain testing
         run: |
-          go test -count 1 -timeout 2h -race -v ./...
+          go test -count 1 -timeout 2h -race -v ./... -parallel 4
         env:
           KUBECONFIG1: /tmp/config1
           KUBECONFIG2: /tmp/config2

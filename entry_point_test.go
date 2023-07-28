@@ -24,13 +24,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 
+	"github.com/networkservicemesh/integration-tests/extensions/parallel"
 	"github.com/networkservicemesh/integration-tests/suites/multicluster"
 )
 
 func TestFloatingInterdomainBasicSuite(t *testing.T) {
 	require.NoError(t, flag.Set("gotestmd.t", "10m"))
 	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
-	suite.Run(t, new(multicluster.Suite))
+	parallel.Run(t, new(multicluster.Suite), "TestFloating_vl3_scale_from_zero", "TestFloating_vl3_dns", "TestFloating_nse_composition")
 }
