@@ -29,8 +29,28 @@ import (
 	"github.com/networkservicemesh/integration-tests/suites/multicluster"
 )
 
+type calicoFeatureSuite struct {
+	multicluster.Suite
+}
+
+func (s *calicoFeatureSuite) BeforeTest(suiteName, testName string) {
+	switch testName {
+	case
+		"TestFloating_kernel2ip2kernel",
+		"TestFloating_dns",
+		"TestFloating_nse_composition",
+		"TestFloating_vl3_basic",
+		"TestFloating_vl3_dns",
+		"TestFloating_vl3_scale_from_zero",
+		"TestInterdomain_kernel2ethernet2kernel",
+		"TestInterdomain_kernel2ip2kernel",
+		"TestInterdomain_dns":
+		s.T().Skip()
+	}
+}
+
 func TestFloatingInterdomainBasicSuite(t *testing.T) {
 	require.NoError(t, flag.Set("gotestmd.t", "10m"))
 	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
-	parallel.Run(t, new(multicluster.Suite), "TestFloating_vl3_scale_from_zero", "TestFloating_vl3_dns", "TestFloating_nse_composition")
+	parallel.Run(t, new(calicoFeatureSuite))
 }

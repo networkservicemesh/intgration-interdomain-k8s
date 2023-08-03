@@ -163,4 +163,4 @@ jobs:
         if: ${{ always() }}
         with:
           name: logs-${{ github.run_number }}
-          path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/.tests/cloud_test/
+          path: ${{ github.workspace }}/src/github.com/${{ github.repository }}/logs
