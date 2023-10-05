@@ -20,7 +20,7 @@ curl -o aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.21
 
 eksctl create cluster  \
       --name "${AWS_CLUSTER_NAME}" \
-      --version 1.22 \
+      --version 1.27 \
       --nodegroup-name "${AWS_CLUSTER_NAME}-workers" \
       --node-type t3.xlarge \
       --nodes 1
