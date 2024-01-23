@@ -2,6 +2,8 @@
 
 echo "aws region is $AWS_REGION"
 
+export IAM_NAME=ebs-csi-controller-sa
+
 apt-get update && apt-get -y install curl dnsutils
 
 curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl
@@ -44,6 +46,19 @@ if [[ -z $sg  ]]; then
     echo "Security group is not found"
     exit 1
 fi
+
+# These steps are required to support CSI
+eksctl utils associate-iam-oidc-provider --cluster="${AWS_CLUSTER_NAME}" --approve
+eksctl create iamserviceaccount \
+    --name "${IAM_NAME}" \
+    --namespace kube-system \
+    --cluster "${AWS_CLUSTER_NAME}" \
+    --role-name AmazonEKS_EBS_CSI_DriverRole \
+    --role-only \
+    --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+    --approve
+ROLE_ARN=$(eksctl get iamserviceaccount --cluster "${AWS_CLUSTER_NAME}" -o json | jq -r '.[] | select(.metadata.name == env.IAM_NAME) | .status.roleARN')
+eksctl create addon --name aws-ebs-csi-driver --cluster "${AWS_CLUSTER_NAME}" --service-account-role-arn "${ROLE_ARN}" --force
 
 ### authorize wireguard
 aws ec2 authorize-security-group-ingress --group-id "$sg" --protocol tcp --port 51820 --cidr 0.0.0.0/0
