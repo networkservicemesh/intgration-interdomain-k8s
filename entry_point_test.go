@@ -1,6 +1,6 @@
 // Copyright (c) 2021 Doc.ai and/or its affiliates.
 //
-// Copyright (c) 2022-2023 Cisco and/or its affiliates.
+// Copyright (c) 2022-2024 Cisco and/or its affiliates.
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -26,11 +26,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/networkservicemesh/integration-tests/extensions/parallel"
-	"github.com/networkservicemesh/integration-tests/suites/multicluster"
+	"github.com/networkservicemesh/integration-tests/suites/interdomain/suites/basic"
 )
 
-func TestFloatingInterdomainBasicSuite(t *testing.T) {
+func TestRunBasicInterdomainSuite(t *testing.T) {
 	require.NoError(t, flag.Set("gotestmd.t", "10m"))
 	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
-	parallel.Run(t, new(multicluster.Suite), "TestFloating_vl3_scale_from_zero", "TestFloating_vl3_dns", "TestFloating_nse_composition")
+	parallel.Run(t, new(basic.Suite), "TestFloating_vl3_basic", "TestFloating_vl3_dns", "TestFloating_vl3_scale_from_zero", "TestFloating_nse_composition")
 }
