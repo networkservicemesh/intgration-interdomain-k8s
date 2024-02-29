@@ -24,7 +24,7 @@ jobs:
   interdomain:
     runs-on: ubuntu-latest
     env:
-      KUBERNETES_VERSION: ${{ secrets.NSM_KUBERNETES_VERSION }}
+      KUBERNETES_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
     steps:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.9.0
@@ -66,6 +66,7 @@ jobs:
 
       - name: Setup gke
         run: |
+            GKE_K8S_VERSION=$(echo $GKE_K8S_VERSION | cut -c 2-)
             scripts/gke/gke-start.sh
         env:
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
@@ -74,6 +75,7 @@ jobs:
           GKE_CLUSTER_NAME: gke-${{ github.run_id }}-${{ github.run_number }}
           GKE_CLUSTER_ZONE: us-central1-a
           GKE_CLUSTER_TYPE: n1-standard-2
+          GKE_K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
           GKE_CLUSTER_NUM_NODES: 1
           KUBECONFIG: /tmp/config1
           USE_GKE_GCLOUD_AUTH_PLUGIN: true
@@ -81,6 +83,7 @@ jobs:
 
       - name: Setup aws
         run: |
+          AWS_K8S_VERSION_SHORT=$(echo $AWS_K8S_VERSION | cut -d "." -f 1-2 | cut -c 2-)
           scripts/aws/aws-start.sh
         env:
           KUBECONFIG: /tmp/config2
@@ -88,10 +91,12 @@ jobs:
           AWS_CLUSTER_NAME: aws-${{ github.run_id }}-${{ github.run_number }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Setup aks
         run: |
+          AZURE_K8S_VERSION=$(echo $AZURE_K8S_VERSION | cut -c 2-)
           az login --service-principal --username ${AZURE_SERVICE_PRINCIPAL} --password ${AZURE_SERVICE_PRINCIPAL_SECRET} --tenant ${AZURE_TENANT}
           scripts/aks/aks-start.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME} ${AZURE_CREDENTIALS_PATH} ${KUBECONFIG}
         env:
@@ -100,11 +105,15 @@ jobs:
           AZURE_CLUSTER_NAME: aks-${{ github.run_id }}-${{ github.run_number }}
           AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
           AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
+          AZURE_K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
           AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Run interdomain testing
         run: |
+          kubectl version --kubeconfig=$KUBECONFIG1
+          kubectl version --kubeconfig=$KUBECONFIG2
+          kubectl version --kubeconfig=$KUBECONFIG3
           go test -count 1 -timeout 2h -race -v ./... -parallel 4
         env:
           KUBECONFIG1: /tmp/config1

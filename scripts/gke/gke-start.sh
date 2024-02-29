@@ -2,7 +2,7 @@
 
 gcloud components install gke-gcloud-auth-plugin
 gcloud components update
-time gcloud container clusters create "${GKE_CLUSTER_NAME}" --project="${GKE_PROJECT_ID}" --machine-type="${GKE_CLUSTER_TYPE}" --num-nodes=1 --zone="${GKE_CLUSTER_ZONE}" -q
+time gcloud container clusters create "${GKE_CLUSTER_NAME}" --project="${GKE_PROJECT_ID}" --machine-type="${GKE_CLUSTER_TYPE}" --num-nodes=1 --zone="${GKE_CLUSTER_ZONE}" --cluster-version="${GKE_K8S_VERSION}" -q
 echo "Writing config to ${KUBECONFIG}"
 gcloud container clusters get-credentials "${GKE_CLUSTER_NAME}" --project="${GKE_PROJECT_ID}" --zone="${GKE_CLUSTER_ZONE}"
 kubectl create clusterrolebinding cluster-admin-binding  --clusterrole cluster-admin --user "$(gcloud config get-value account)"
