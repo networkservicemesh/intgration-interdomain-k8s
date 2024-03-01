@@ -96,7 +96,6 @@ jobs:
 
       - name: Setup aks
         run: |
-          AZURE_K8S_VERSION=$(echo $AZURE_K8S_VERSION | cut -c 2-)
           az login --service-principal --username ${AZURE_SERVICE_PRINCIPAL} --password ${AZURE_SERVICE_PRINCIPAL_SECRET} --tenant ${AZURE_TENANT}
           scripts/aks/aks-start.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME} ${AZURE_CREDENTIALS_PATH} ${KUBECONFIG}
         env:
@@ -105,7 +104,6 @@ jobs:
           AZURE_CLUSTER_NAME: aks-${{ github.run_id }}-${{ github.run_number }}
           AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
           AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
-          AZURE_K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
           AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 

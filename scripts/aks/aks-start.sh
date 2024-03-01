@@ -11,7 +11,6 @@ fi
 echo -n "Creating AKS cluster '$AZURE_CLUSTER_NAME'..."
 az aks create \
     --resource-group "$AZURE_RESOURCE_GROUP" \
-    --kubernetes-version "$AZURE_K8S_VERSION" \
     --name "$AZURE_CLUSTER_NAME" \
     --node-count 1 \
     --node-vm-size Standard_B2s \
