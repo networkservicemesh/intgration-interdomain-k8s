@@ -32,5 +32,12 @@ import (
 func TestRunBasicInterdomainSuite(t *testing.T) {
 	require.NoError(t, flag.Set("gotestmd.t", "10m"))
 	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
-	parallel.Run(t, new(basic.Suite), "TestFloating_vl3_basic", "TestFloating_vl3_dns", "TestFloating_vl3_scale_from_zero", "TestFloating_nse_composition")
+
+	var s = new(basic.Suite)
+	parallel.Run(t, s, parallel.WithRunningTestsSynchronously(
+		s.TestFloating_vl3_basic,
+		s.TestFloating_vl3_dns,
+		s.TestFloating_vl3_scale_from_zero,
+		s.TestFloating_nse_composition,
+	))
 }
