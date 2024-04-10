@@ -3,7 +3,7 @@ module github.com/networkservicemesh/integration-interdomain-k8s
 go 1.20
 
 require (
-	github.com/networkservicemesh/integration-tests v0.0.0-20240227135027-7ac3a81dd853
+	github.com/networkservicemesh/integration-tests v0.0.0-20240409142903-9f43b1083338
 	github.com/stretchr/testify v1.8.4
 )
 

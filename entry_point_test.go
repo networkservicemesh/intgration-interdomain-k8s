@@ -2,6 +2,8 @@
 //
 // Copyright (c) 2022-2024 Cisco and/or its affiliates.
 //
+// Copyright (c) 2024 Pragmagic Inc. and/or its affiliates.
+//
 // SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,5 +34,12 @@ import (
 func TestRunBasicInterdomainSuite(t *testing.T) {
 	require.NoError(t, flag.Set("gotestmd.t", "10m"))
 	os.Setenv("KUBECONFIG", os.Getenv("KUBECONFIG1"))
-	parallel.Run(t, new(basic.Suite), "TestFloating_vl3_basic", "TestFloating_vl3_dns", "TestFloating_vl3_scale_from_zero", "TestFloating_nse_composition")
+
+	basicSuite := new(basic.Suite)
+	parallel.Run(t, basicSuite,
+		parallel.WithRunningTestsSynchronously(
+			basicSuite.TestFloating_vl3_basic,
+			basicSuite.TestFloating_vl3_dns,
+			basicSuite.TestFloating_vl3_scale_from_zero,
+			basicSuite.TestFloating_nse_composition))
 }
