@@ -67,6 +67,15 @@ jobs:
 
       - name: Setup gke
         run: |
+            NSM_KUBERNETES_VERSION=$(echo ${{ vars.NSM_KUBERNETES_VERSION }} | cut -d '.' -f 1,2 | cut -c 2-)
+            GKE_CLUSTER_VERSION=$(gcloud container get-server-config --zone="$GKE_CLUSTER_ZONE" --format=json \
+                | jq '.channels[] | select (.channel=="REGULAR") | .validVersions[]' \
+                | grep -m 1 "$NSM_KUBERNETES_VERSION" | tr -d '"')
+            if [ -z "$GKE_CLUSTER_VERSION"]; then
+                echo "GKE cluster version is not valid: $GKE_CLUSTER_VERSION"
+                exit 1
+            fi
+
             scripts/gke/gke-start.sh
         env:
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
@@ -82,6 +91,8 @@ jobs:
 
       - name: Setup aws
         run: |
+          AWS_K8S_VERSION=${{ vars.NSM_KUBERNETES_VERSION }}
+          AWS_K8S_VERSION_SHORT=$(echo $AWS_K8S_VERSION | cut -d "." -f 1-2 | cut -c 2-)
           scripts/aws/aws-start.sh
         env:
           KUBECONFIG: /tmp/config2
@@ -93,6 +104,7 @@ jobs:
 
       - name: Setup aks
         run: |
+          AKS_K8S_VERSION=$(echo ${{ vars.NSM_KUBERNETES_VERSION }} | cut -d '.' -f 1,2 | cut -c 2-)
           az login --service-principal --username ${AZURE_SERVICE_PRINCIPAL} --password ${AZURE_SERVICE_PRINCIPAL_SECRET} --tenant ${AZURE_TENANT}
           scripts/aks/aks-start.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME} ${AZURE_CREDENTIALS_PATH} ${KUBECONFIG}
         env:
@@ -106,6 +118,9 @@ jobs:
 
       - name: Run interdomain testing
         run: |
+          kubectl version --kubeconfig=$KUBECONFIG1
+          kubectl version --kubeconfig=$KUBECONFIG2
+          kubectl version --kubeconfig=$KUBECONFIG3
           go test -count 1 -timeout 2h -race -v ./... -parallel 4
         env:
           KUBECONFIG1: /tmp/config1
