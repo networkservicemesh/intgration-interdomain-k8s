@@ -67,15 +67,6 @@ jobs:
 
       - name: Setup gke
         run: |
-            NSM_KUBERNETES_VERSION=$(echo ${{ vars.NSM_KUBERNETES_VERSION }} | cut -d '.' -f 1,2 | cut -c 2-)
-            GKE_CLUSTER_VERSION=$(gcloud container get-server-config --zone="$GKE_CLUSTER_ZONE" --format=json \
-                | jq '.channels[] | select (.channel=="REGULAR") | .validVersions[]' \
-                | grep -m 1 "$NSM_KUBERNETES_VERSION" | tr -d '"')
-            if [ -z "$GKE_CLUSTER_VERSION"]; then
-                echo "GKE cluster version is not valid: $GKE_CLUSTER_VERSION"
-                exit 1
-            fi
-
             scripts/gke/gke-start.sh
         env:
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
@@ -85,15 +76,13 @@ jobs:
           GKE_CLUSTER_ZONE: us-central1-a
           GKE_CLUSTER_TYPE: n1-standard-2
           GKE_CLUSTER_NUM_NODES: 1
+          K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
           KUBECONFIG: /tmp/config1
           USE_GKE_GCLOUD_AUTH_PLUGIN: true
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Setup aws
         run: |
-          AWS_K8S_VERSION1=${{ vars.NSM_KUBERNETES_VERSION }}
-          echo $AWS_K8S_VERSION1
-          AWS_K8S_VERSION_SHORT=$(echo $AWS_K8S_VERSION | cut -d "." -f 1-2 | cut -c 2-)
           scripts/aws/aws-start.sh
         env:
           KUBECONFIG: /tmp/config2
@@ -101,14 +90,13 @@ jobs:
           AWS_CLUSTER_NAME: aws-${{ github.run_id }}-${{ github.run_number }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
+          K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Setup aks
         run: |
-          AKS_K8S_VERSION=$(echo ${{ vars.NSM_KUBERNETES_VERSION }} | cut -d '.' -f 1,2 | cut -c 2-)
           az login --service-principal --username ${AZURE_SERVICE_PRINCIPAL} --password ${AZURE_SERVICE_PRINCIPAL_SECRET} --tenant ${AZURE_TENANT}
-          scripts/aks/aks-start.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME} ${AZURE_CREDENTIALS_PATH} ${KUBECONFIG}
+          scripts/aks/aks-start.sh ${AZURE_RESOURCE_GROUP} ${AZURE_CLUSTER_NAME} ${AZURE_CREDENTIALS_PATH} ${KUBECONFIG} ${AKS_K8S_VERSION}
         env:
           KUBECONFIG: /tmp/config3
           AZURE_RESOURCE_GROUP: nsm-ci
@@ -116,12 +104,16 @@ jobs:
           AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
           AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
           AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Run interdomain testing
         run: |
+          echo "cluster1"
           kubectl version --kubeconfig=$KUBECONFIG1
+          echo "cluster2"
           kubectl version --kubeconfig=$KUBECONFIG2
+          echo "cluster3"
           kubectl version --kubeconfig=$KUBECONFIG3
           go test -count 1 -timeout 2h -race -v ./... -parallel 4
         env:

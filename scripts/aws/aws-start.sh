@@ -6,8 +6,7 @@ export IAM_NAME=ebs-csi-controller-sa
 
 apt-get update && apt-get -y install curl dnsutils
 
-echo $AWS_K8S_VERSION
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$AWS_K8S_VERSION/bin/linux/amd64/kubectl
+curl -LO https://storage.googleapis.com/kubernetes-release/release/"$K8S_VERSION"/bin/linux/amd64/kubectl
 chmod +x kubectl
 mkdir -p ~/.local/bin
 mv ./kubectl ~/.local/bin/kubectl
@@ -21,9 +20,11 @@ curl -o aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.21
     chmod 755 aws-iam-authenticator; \
     mv ./aws-iam-authenticator /usr/local/bin
 
+AWS_K8S_VERSION=$(echo $K8S_VERSION | cut -d "." -f 1-2 | cut -c 2-)
+echo $AWS_K8S_VERSION
 eksctl create cluster  \
       --name "${AWS_CLUSTER_NAME}" \
-      --version ${AWS_K8S_VERSION_SHORT} \
+      --version "${AWS_K8S_VERSION}" \
       --nodegroup-name "${AWS_CLUSTER_NAME}-workers" \
       --node-type t3.xlarge \
       --nodes 1
