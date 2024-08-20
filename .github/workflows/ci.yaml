@@ -91,7 +91,8 @@ jobs:
 
       - name: Setup aws
         run: |
-          AWS_K8S_VERSION=${{ vars.NSM_KUBERNETES_VERSION }}
+          AWS_K8S_VERSION1=${{ vars.NSM_KUBERNETES_VERSION }}
+          echo $AWS_K8S_VERSION1
           AWS_K8S_VERSION_SHORT=$(echo $AWS_K8S_VERSION | cut -d "." -f 1-2 | cut -c 2-)
           scripts/aws/aws-start.sh
         env:
@@ -100,6 +101,7 @@ jobs:
           AWS_CLUSTER_NAME: aws-${{ github.run_id }}-${{ github.run_number }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Setup aks
