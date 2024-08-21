@@ -6,11 +6,6 @@ export IAM_NAME=ebs-csi-controller-sa
 
 apt-get update && apt-get -y install curl dnsutils
 
-curl -LO https://storage.googleapis.com/kubernetes-release/release/"$K8S_VERSION"/bin/linux/amd64/kubectl
-chmod +x kubectl
-mkdir -p ~/.local/bin
-mv ./kubectl ~/.local/bin/kubectl
-
 
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp; \
     mv /tmp/eksctl /usr/local/bin; \
