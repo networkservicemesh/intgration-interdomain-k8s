@@ -8,10 +8,13 @@ if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]; then
     exit 1
 fi
 
+AKS_K8S_VERSION=$(echo "$K8S_VERSION" | cut -d '.' -f 1,2 | cut -c 2-)
+
 echo -n "Creating AKS cluster '$AZURE_CLUSTER_NAME'..."
 az aks create \
     --resource-group "$AZURE_RESOURCE_GROUP" \
     --name "$AZURE_CLUSTER_NAME" \
+    --kubernetes-version "$AKS_K8S_VERSION" \
     --node-count 1 \
     --node-vm-size Standard_B2s \
     --enable-node-public-ip \

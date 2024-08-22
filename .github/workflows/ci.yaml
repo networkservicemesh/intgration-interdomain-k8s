@@ -76,6 +76,7 @@ jobs:
           GKE_CLUSTER_ZONE: us-central1-a
           GKE_CLUSTER_TYPE: n1-standard-2
           GKE_CLUSTER_NUM_NODES: 1
+          K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
           KUBECONFIG: /tmp/config1
           USE_GKE_GCLOUD_AUTH_PLUGIN: true
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
@@ -89,6 +90,7 @@ jobs:
           AWS_CLUSTER_NAME: aws-${{ github.run_id }}-${{ github.run_number }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
       - name: Setup aks
@@ -102,8 +104,14 @@ jobs:
           AZURE_SERVICE_PRINCIPAL: ${{ secrets.AZURE_SERVICE_PRINCIPAL }}
           AZURE_SERVICE_PRINCIPAL_SECRET: ${{ secrets.AZURE_SERVICE_PRINCIPAL_SECRET }}
           AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          K8S_VERSION: ${{ vars.NSM_KUBERNETES_VERSION }}
         working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
 
+      - name: Install kubectl
+        run: |
+            curl -LO https://dl.k8s.io/release/${{ vars.NSM_KUBERNETES_VERSION }}/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mv ./kubectl /usr/local/bin/kubectl
       - name: Run interdomain testing
         run: |
           go test -count 1 -timeout 2h -race -v ./... -parallel 4
