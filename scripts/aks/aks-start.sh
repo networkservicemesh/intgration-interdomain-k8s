@@ -2,14 +2,13 @@
 readonly AZURE_RESOURCE_GROUP=$1
 readonly AZURE_CLUSTER_NAME=$2
 readonly AZURE_CREDENTIALS_PATH=$3
+
 if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]; then
     echo "Usage: aks-start.sh <resource-group> <cluster-name> <kube-config-path>"
     exit 1
 fi
 
-AKS_K8S_VERSION=$(echo $K8S_VERSION | cut -d '.' -f 1,2 | cut -c 2-)
-echo "k8s version: $K8S_VERSION"
-echo "AKS K8S: $AKS_K8S_VERSION"
+AKS_K8S_VERSION=$(echo "$K8S_VERSION" | cut -d '.' -f 1,2 | cut -c 2-)
 
 echo -n "Creating AKS cluster '$AZURE_CLUSTER_NAME'..."
 az aks create \

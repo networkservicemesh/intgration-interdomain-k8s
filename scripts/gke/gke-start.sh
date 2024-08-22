@@ -4,13 +4,10 @@ K8S_VERSION=$(echo ${K8S_VERSION} | cut -d '.' -f 1,2 | cut -c 2-)
 GKE_CLUSTER_VERSION=$(gcloud container get-server-config --zone="$GKE_CLUSTER_ZONE" --format=json \
     | jq '.channels[] | select (.channel=="REGULAR") | .validVersions[]' \
     | grep -m 1 "$K8S_VERSION" | tr -d '"')
-if [ -z "$GKE_CLUSTER_VERSION"]; then
+if [ -z "$GKE_CLUSTER_VERSION" ]; then
     echo "GKE cluster version is not valid: $GKE_CLUSTER_VERSION"
     exit 1
 fi
-
-echo $K8S_VERSION
-echo $GKE_CLUSTER_VERSION
 
 gcloud components install gke-gcloud-auth-plugin
 gcloud components update

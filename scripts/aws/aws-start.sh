@@ -7,15 +7,15 @@ export IAM_NAME=ebs-csi-controller-sa
 apt-get update && apt-get -y install curl dnsutils
 
 
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp; \
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_"$(uname -s)"_amd64.tar.gz" | tar xz -C /tmp; \
     mv /tmp/eksctl /usr/local/bin; \
     eksctl version
 
-curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.22/aws-iam-authenticator_0.6.22_$(uname -s)_amd64; \
+curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.22/aws-iam-authenticator_0.6.22_"$(uname -s)"_amd64; \
     chmod 755 aws-iam-authenticator; \
     mv ./aws-iam-authenticator /usr/local/bin
 
-AWS_K8S_VERSION=$(echo $K8S_VERSION | cut -d "." -f 1-2 | cut -c 2-)
+AWS_K8S_VERSION=$(echo "$K8S_VERSION" | cut -d "." -f 1-2 | cut -c 2-)
 echo $AWS_K8S_VERSION
 eksctl create cluster  \
       --name "${AWS_CLUSTER_NAME}" \

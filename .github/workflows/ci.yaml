@@ -64,6 +64,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ${{ github.workspace }}/src/github.com/${{ github.repository }}
+
       - name: Setup gke
         run: |
             scripts/gke/gke-start.sh
@@ -113,12 +114,6 @@ jobs:
             mv ./kubectl /usr/local/bin/kubectl
       - name: Run interdomain testing
         run: |
-          echo "cluster1"
-          kubectl version --kubeconfig=$KUBECONFIG1
-          echo "cluster2"
-          kubectl version --kubeconfig=$KUBECONFIG2
-          echo "cluster3"
-          kubectl version --kubeconfig=$KUBECONFIG3
           go test -count 1 -timeout 2h -race -v ./... -parallel 4
         env:
           KUBECONFIG1: /tmp/config1
