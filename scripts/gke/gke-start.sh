@@ -1,6 +1,6 @@
 #!/bin/bash
 
-K8S_VERSION=$(echo ${K8S_VERSION} | cut -d '.' -f 1,2 | cut -c 2-)
+K8S_VERSION=$(echo "$K8S_VERSION" | cut -d '.' -f 1,2 | cut -c 2-)
 GKE_CLUSTER_VERSION=$(gcloud container get-server-config --zone="$GKE_CLUSTER_ZONE" --format=json \
     | jq '.channels[] | select (.channel=="REGULAR") | .validVersions[]' \
     | grep -m 1 "$K8S_VERSION" | tr -d '"')
