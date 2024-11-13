@@ -1,6 +1,6 @@
 module github.com/networkservicemesh/integration-interdomain-k8s
 
-go 1.20
+go 1.23
 
 require (
 	github.com/networkservicemesh/integration-tests v0.0.0-20240923100516-0f5a7c947c8d
